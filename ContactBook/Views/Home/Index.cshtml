@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model List<Contact>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf    
+@functions{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken!;
+    }
+}
+
+<div class="container p-3">
+    <div class="float-end">
+        <div class="row">
+    <div class="col-md-7">
+        <a class="btn" asp-controller="Home" asp-action="Create">Add Contact</a>
+    </div>
+    <div class="nav-item dropdown col-md-5">
+        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" 
+            role="button" aria-haspopup="true" aria-expanded="false">Export</a>
+        <div class="dropdown-menu">
+          <a class="dropdown-item btn" onclick="Exp('/Home/ExportExcel');">Export Excel</a>
+          <a class="dropdown-item btn" onclick="Exp('/Home/ExportCSV');">Export CSV</a>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="text-center">
+    @if (Model?.Count > 0)
+    {
+        <table class="table table-hover" id="tblContacts">
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+            @foreach(var c in Model)
+            {
+            <tr>
+                <td>@c.FirstName</td>
+                <td>@c.LastName</td>
+                <td>
+                    <ul id="emails">
+                        @foreach(var email in c.Email)
+                        {
+                            <li>@email.EmailAddr</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    <ul id="phones">
+                        @foreach(var no in c.Phone)
+                        {
+                            <li>@no.PhoneNo</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    <ul id="addresses">
+                        @foreach(var addr in c.Address)
+                        {
+                            <li>@addr.Addr</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    <span>
+                        <a asp-controller="Home" asp-route-Id="@c.Id" asp-action="Create" class="mx-2"><img src="~/pencil-square.svg"></a>
+                        <a asp-controller="Home" asp-route-Id="@c.Id" asp-action="Delete" class="mx-2"><img src="~/trash.svg"></a>
+                    </span>
+                </td>
+            </tr>
+        }
+        </table>
+    }
+    else
+    {
+        <h3>No Contacts Matching The Search Found.</h3>
+    }
+    </div>
+</div>
+<script type="text/javascript">
+    function Exp(postUrl) {
+            //Loop through the Table rows and build a JSON array.
+            var customers = new Array();
+            $("#tblContacts TBODY tr:gt(0)").each(function () { // Skip table header.
+                var row = $(this);
+                var customer = {};
+                customer.FirstName = row.find("TD").eq(0).html();
+                customer.LastName = row.find("TD").eq(1).html();
+
+                // Email
+                customer.Email = new Array();
+                row.find("TD").eq(2).find("ul").find("li").each(function() {
+                    var email = {};
+                    email.EmailAddr = $(this).html();
+                    customer.Email.push(email);
+                });
+
+                // Phone
+                customer.Phone = new Array();
+                row.find("TD").eq(3).find("ul").find("li").each(function() {
+                    var phone = {};
+                    phone.PhoneNo = $(this).html();
+                    customer.Phone.push(phone);
+                });
+
+                // Address
+                customer.Address = new Array();
+                row.find("TD").eq(4).find("ul").find("li").each(function() {
+                    var addr = {};
+                    addr.Addr = $(this).html();
+                    customer.Address.push(addr);
+                });
+
+                customers.push(customer);
+            });
+            //alert(JSON.stringify(customers));
+ 
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+                url: postUrl,
+                //url: "/Home/ExportCSV",
+                data: JSON.stringify(customers),
+                contentType: "application/json",
+                dataType: "json",
+                headers: { "RequestVerificationToken": "@GetAntiXsrfRequestToken()" }
+            }).done(function (data) {
+                //get the file name for download
+                if (data.fileName != "") {
+                    //use window.location.href for redirect to download action for download the file
+                    window.location.href = "@Url.RouteUrl(new { Controller = "Home", Action = "Download" })/?fileName=" + data.fileName;
+                }
+            });
+        };
+</script>

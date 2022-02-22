@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Create Contact";
+}
+@model Contact
+@{
+    int emailC = 0, phoneC = 0, addressC = 0;
+}
+<form asp-action="Create" id="form">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <label class="control-label">First Name</label>
+        <input asp-for="FirstName" class="control-label" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label class="control-label">Last Name</label>
+        <input asp-for="LastName" class="control-label" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <table id="Emails">
+            <tr>
+                <td>
+                    <label class="control-label">Emails</label>
+                    <button onclick="addEmail()" type="button" class="btn btn-outline-primary">+</button>
+                </td>
+            </tr>
+            @if (Model == null || Model?.Email.Count() == 0)
+            {
+                 <tr>
+                    <td><input asp-for="Email[emailC].EmailAddr" class="control-label" /></td>
+                </tr>
+            }
+            else
+                @for (; emailC < Model?.Email.Count(); emailC++)
+                {
+                    <tr>
+                        <td><input asp-for="Email[emailC].EmailAddr" class="control-label" /></td>
+                    </tr>
+                }
+        </table>
+    </div>
+
+    <div class="form-group">
+        <table id="PhoneNumbers">
+            <tr>
+                <td>
+                    <label class="control-label">Phone Numbers</label>
+                    <button onclick="addNumber()" type="button" class="btn btn-outline-primary">+</button>
+                </td>
+            </tr>
+            @if (Model == null || Model?.Phone.Count() == 0)
+            {
+                 <tr>
+                    <td><input asp-for="Phone[phoneC].PhoneNo" class="control-label" /></td>
+                </tr>
+            }
+            else
+                @for (; phoneC < Model?.Phone.Count(); phoneC++)
+                {
+                    <tr>
+                        <td><input asp-for="Phone[phoneC].PhoneNo" class="control-label" /></td>
+                    </tr>
+                }
+        </table>
+    </div>
+
+    <div class="form-group">
+        <table id="Addresses">
+            <tr>
+                <td>
+                    <label class="control-label">Addresses</label>
+                    <button onclick="addAddress()" type="button" class="btn btn-outline-primary">+</button>
+                </td>
+            </tr>
+            @if (Model == null || Model?.Phone.Count() == 0)
+            {
+                 <tr>
+                    <td><input asp-for="Address[addressC].Addr" class="control-label" /></td>
+                </tr>
+            }
+            else
+                @for (; addressC < Model?.Address.Count(); addressC++)
+                {
+                    <tr>
+                        <td><input asp-for="Address[addressC].Addr" class="control-label" /></td>
+                    </tr>
+                }
+        </table>
+    </div>
+
+    <div class="p-2 row">
+        <div class="col">
+            <input type="submit" class="btn btn-outline-info" value="Save"/>
+            <a asp-action="Index" class="btn btn-outline-success"><i class="fas fa-sign-out-alt"></i> Back</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts
+{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+    <script>
+        var emailsCounter = @emailC;
+        function addEmail() {
+            var table = document.getElementById("Emails");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            cell1.innerHTML = '<input type="text" name="Email[' + emailsCounter + '].EmailAddr"/><button onclick="deleterow(Emails,' + emailsCounter + ')" type="button" class="btn btn-outline-primary">-</button>';
+            emailsCounter++;
+        }
+
+        var numbersCounter = @phoneC;
+        function addNumber() {
+            var table = document.getElementById("PhoneNumbers");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            cell1.innerHTML = '<input type="text" name="Phone[' + numbersCounter + '].PhoneNo"/>';
+            numbersCounter++;
+        }
+
+        var addressesCounter = @addressC;
+        function addAddress() {
+            var table = document.getElementById("Addresses");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            cell1.innerHTML = '<input type="text" name="Address[' + addressesCounter + '].Addr"/>';
+            addressesCounter++;
+        }
+
+        function deleterow(tableID, rowId) {
+            var table = document.getElementById("Emails");
+            table.deleteRow(rowId);
+            emailsCounter--;
+        }
+
+    </script>
+}
